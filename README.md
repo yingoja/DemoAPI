@@ -27,6 +27,7 @@
 
 ## 测试结果展示
 * HTML报告
+![Image](https://github.com/yingoja/DemoAPI/blob/master/share/screeshots/report1.JPG)
 ![Image](https://github.com/yingoja/DemoAPI/blob/master/share/screeshots/report.JPG)
 * Excel用例结果
 ![Image](https://github.com/yingoja/DemoAPI/blob/master/share/screeshots/excel.JPG)
