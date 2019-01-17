@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>发布会系统接口自动化测试报告</title>
+    <meta name="generator" content="HTMLTestRunner 0.8.2"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    
+<style type="text/css" media="screen">
+body        { font-family: verdana, arial, helvetica, sans-serif; font-size: 80%; }
+table       { font-size: 100%; }
+pre         { }
+
+/* -- heading ---------------------------------------------------------------------- */
+h1 {
+	font-size: 16pt;
+	color: gray;
+}
+.heading {
+    margin-top: 0ex;
+    margin-bottom: 1ex;
+}
+
+.heading .attribute {
+    margin-top: 1ex;
+    margin-bottom: 0;
+}
+
+.heading .description {
+    margin-top: 4ex;
+    margin-bottom: 6ex;
+}
+
+/* -- css div popup ------------------------------------------------------------------------ */
+a.popup_link {
+}
+
+a.popup_link:hover {
+    color: red;
+}
+
+.img{
+	width: 100%;
+	height: 100%;
+	border-collapse: collapse;
+    border: 2px solid #777;
+}
+
+.screenshots {
+    z-index: 100;
+	position:absolute;
+	left: 23%;
+	top: 20%;
+	display: none;
+}
+.close_shots {
+	position:absolute;
+	top:0; left:98%;
+	z-index:99;
+	width:20px;
+}
+.popup_window {
+    display: none;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    /*border: solid #627173 1px; */
+    padding: 10px;
+    background-color: #E6E6D6;
+    font-family: "Lucida Console", "Courier New", Courier, monospace;
+    text-align: left;
+    font-size: 8pt;
+    width: 800px;
+}
+
+}
+/* -- report ------------------------------------------------------------------------ */
+#show_detail_line {
+    margin-top: 3ex;
+    margin-bottom: 1ex;
+}
+#result_table {
+    width: 80%;
+    border-collapse: collapse;
+    border: 1px solid #777;
+}
+#header_row {
+    font-weight: bold;
+    color: white;
+    background-color: #777;
+}
+#result_table td {
+    border: 1px solid #777;
+    padding: 2px;
+}
+#total_row  { font-weight: bold; }
+.passClass  { background-color: #6c6; }
+.failClass  { background-color: #c60; }
+.errorClass { background-color: #c00; }
+.passCase   { color: #6c6; font-weight: bold;}
+.failCase   { color: #c60; font-weight: bold; }
+.errorCase  { color: #c00; font-weight: bold; }
+.hiddenRow  { display: none; }
+.testcase   { margin-left: 2em; }
+
+
+/* -- ending ---------------------------------------------------------------------- */
+#ending {
+}
+.piechart{
+    position:absolute;  ;
+    top:20px;
+    left:350px;
+    width: 200px;
+    float: left;
+    display:  inline;
+}
+
+</style>
+
+</head>
+<body>
+<script language="javascript" type="text/javascript"><!--
+output_list = Array();
+
+/* 增加显示通过分类列表  --YinJia */
+/* level - 0:Summary; 1:Failed; 2:Pass; 3:All */
+function showCase(level) {
+    trs = document.getElementsByTagName("tr");
+    for (var i = 0; i < trs.length; i++) {
+        tr = trs[i];
+        id = tr.id;
+        if (id.substr(0,2) == 'ft') {
+            if (level == 2 || level == 0) {
+                tr.className = 'hiddenRow';
+            }
+            else {
+                tr.className = '';
+            }
+        }
+        if (id.substr(0,2) == 'pt') {
+            if (level < 2) {
+                tr.className = 'hiddenRow';
+            }
+            else {
+                tr.className = '';
+            }
+        }
+    }
+}
+
+
+function showClassDetail(cid, count) {
+    var id_list = Array(count);
+    var toHide = 1;
+    for (var i = 0; i < count; i++) {
+        tid0 = 't' + cid.substr(1) + '.' + (i+1);
+        tid = 'f' + tid0;
+        tr = document.getElementById(tid);
+        if (!tr) {
+            tid = 'p' + tid0;
+            tr = document.getElementById(tid);
+        }
+        id_list[i] = tid;
+        if (tr.className) {
+            toHide = 0;
+        }
+    }
+    for (var i = 0; i < count; i++) {
+        tid = id_list[i];
+        if (toHide) {
+            document.getElementById('div_'+tid).style.display = 'none'
+            document.getElementById(tid).className = 'hiddenRow';
+        }
+        else {
+            document.getElementById(tid).className = '';
+        }
+    }
+}
+
+
+function showTestDetail(div_id){
+    var details_div = document.getElementById(div_id)
+    var displayState = details_div.style.display
+    // alert(displayState)
+    if (displayState != 'block' ) {
+        displayState = 'block'
+        details_div.style.display = 'block'
+    }
+    else {
+        details_div.style.display = 'none'
+    }
+}
+
+
+function html_escape(s) {
+    s = s.replace(/&/g,'&amp;');
+    s = s.replace(/</g,'&lt;');
+    s = s.replace(/>/g,'&gt;');
+    return s;
+}
+/* 增加饼图显示  --YinJia */
+function drawCircle(pass, fail, error){
+    var color = ["#6c6","#c60","#c00"];
+    var data = [pass,fail,error];
+    var text_arr = ["pass", "fail", "error"];
+
+    var canvas = document.getElementById("circle");
+    var ctx = canvas.getContext("2d");
+    var startPoint=0;
+    var width = 20, height = 10;
+    var posX = 112 * 2 + 20, posY = 30;
+    var textX = posX + width + 5, textY = posY + 10;
+    for(var i=0;i<data.length;i++){
+        ctx.fillStyle = color[i];
+        ctx.beginPath();
+        ctx.moveTo(112,84);
+        ctx.arc(112,84,84,startPoint,startPoint+Math.PI*2*(data[i]/(data[0]+data[1]+data[2])),false);
+        ctx.fill();
+        startPoint += Math.PI*2*(data[i]/(data[0]+data[1]+data[2]));
+        ctx.fillStyle = color[i];
+        ctx.fillRect(posX, posY + 20 * i, width, height);
+        ctx.moveTo(posX, posY + 20 * i);
+        ctx.font = 'bold 14px';
+        ctx.fillStyle = color[i];
+        var percent = text_arr[i] + ":"+data[i];
+        ctx.fillText(percent, textX, textY + 20 * i);
+
+    }
+}
+
+function show_shots(obj) {
+	obj.nextElementSibling.style.display="block";
+
+}
+
+function close_shots(obj) {
+	obj.parentElement.style.display="none";
+}
+
+
+
+/* obsoleted by detail in <div>
+function showOutput(id, name) {
+    var w = window.open("", //url
+                    name,
+                    "resizable,scrollbars,status,width=800,height=450");
+    d = w.document;
+    d.write("<pre>");
+    d.write(html_escape(output_list[id]));
+    d.write("\n");
+    d.write("<a href='javascript:window.close()'>close</a>\n");
+    d.write("</pre>\n");
+    d.close();
+}
+*/
+--></script>
+<div class="piechart">
+    <div>
+        <canvas id="circle" width="350" height="168" </canvas>
+    </div>
+</div>
+<div class='heading'>
+<h1>发布会系统接口自动化测试报告</h1>
+<p class='attribute'><strong>测试人员:</strong> Jason</p>
+<p class='attribute'><strong>开始时间:</strong> 2019-01-17 18:38:19</p>
+<p class='attribute'><strong>合计耗时:</strong> 0:00:00.937054</p>
+<p class='attribute'><strong>测试结果:</strong> 总共 15 通过 15 通过率 = 100.00%</p>
+
+<p class='description'>环境：windows 7 浏览器：chrome</p>
+</div>
+
+
+
+<p id='show_detail_line'>显示
+<a href='javascript:showCase(0)'>概要</a>
+<a href='javascript:showCase(1)'>失败[0]</a>
+<a href='javascript:showCase(2)'>通过[15]</a>
+<a href='javascript:showCase(3)'>所有[15]</a>
+</p>
+<table id='result_table'>
+<colgroup>
+<col align='left' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+<col align='right' />
+</colgroup>
+<tr id='header_row'>
+    <td>用例集/测试用例</td>
+    <td>总计</td>
+    <td>通过</td>
+    <td>失败</td>
+    <td>错误</td>
+    <td>视图</td>
+    <td>错误截图</td>
+</tr>
+
+<tr class='passClass'>
+    <td>testAPI.Demo_API: 发布会系统</td>
+    <td>15</td>
+    <td>15</td>
+    <td>0</td>
+    <td>0</td>
+    <td><a href="javascript:showClassDetail('c1',15)">详情</a></td>
+    <td>&nbsp;</td>
+</tr>
+
+    <tr id='pt1.1' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_01: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.1')" >
+            通过</a>
+
+        <div id='div_pt1.1' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.1').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.1: ******* 正在执行用例 -&gt;event_query_001 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_event_list/
+请求参数: {"eid":1}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 200, "message": "success", "data": {"name": "\u7ea2\u7c73Pro\u53d1\u5e03\u4f1a", "limit": 2000, "status": true, "address": "\u5317\u4eac\u4f1a\u5c55\u4e2d\u5fc3", "start_time": "2019-01-17T21:24:59Z"}}
+用例测试结果:  event_query_001----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.2' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_02: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.2')" >
+            通过</a>
+
+        <div id='div_pt1.2' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.2').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.2: ******* 正在执行用例 -&gt;event_query_002 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_event_list/
+请求参数: {"name":"红米"}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 200, "message": "success", "data": [{"eid": 1, "name": "\u7ea2\u7c73Pro\u53d1\u5e03\u4f1a", "limit": 2000, "status": true, "address": "\u5317\u4eac\u4f1a\u5c55\u4e2d\u5fc3", "start_time": "2019-01-17T21:24:59Z"}]}
+用例测试结果:  event_query_002----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.3' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_03: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.3')" >
+            通过</a>
+
+        <div id='div_pt1.3' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.3').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.3: ******* 正在执行用例 -&gt;event_query_003 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_event_list/
+请求参数: {"eid":"","name":""}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 10021, "message": "parameter error"}
+用例测试结果:  event_query_003----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.4' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_04: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.4')" >
+            通过</a>
+
+        <div id='div_pt1.4' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.4').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.4: ******* 正在执行用例 -&gt;event_query_004 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_event_list/
+请求参数: {"eid":18}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 10022, "message": "query result is empty"}
+用例测试结果:  event_query_004----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.5' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_05: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.5')" >
+            通过</a>
+
+        <div id='div_pt1.5' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.5').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.5: ******* 正在执行用例 -&gt;event_query_005 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_event_list/
+请求参数: {"name":"我们"}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 10022, "message": "query result is empty"}
+用例测试结果:  event_query_005----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.6' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_06: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.6')" >
+            通过</a>
+
+        <div id='div_pt1.6' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.6').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.6: ******* 正在执行用例 -&gt;event_add_006 *********
+请求方式: post，请求URL: http://127.0.0.1:8000/api/add_event/
+请求参数: 
+post请求body类型为：data ,body内容为：{"eid":"","name":"","limit":"","address":"","start_time":""}
+页面返回信息：{"status": 10021, "message": "parameter error"}
+用例测试结果:  event_add_006----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.7' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_07: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.7')" >
+            通过</a>
+
+        <div id='div_pt1.7' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.7').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.7: ******* 正在执行用例 -&gt;event_add_007 *********
+请求方式: post，请求URL: http://127.0.0.1:8000/api/add_event/
+请求参数: 
+post请求body类型为：data ,body内容为：{"eid":3,"name":"华为荣耀8发布会","limit":2000,"address":"深圳福田会展中心","start_time":"2018-12-10 12:00:00"}
+页面返回信息：{"status": 10022, "message": "event id already exists"}
+用例测试结果:  event_add_007----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.8' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_08: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.8')" >
+            通过</a>
+
+        <div id='div_pt1.8' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.8').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.8: ******* 正在执行用例 -&gt;event_add_008 *********
+请求方式: post，请求URL: http://127.0.0.1:8000/api/add_event/
+请求参数: 
+post请求body类型为：data ,body内容为：{"eid":10,"name":"红米Pro发布会","limit":2000,"address":"北京会展中心","start_time":"2018"}
+页面返回信息：{"status": 10023, "message": "event name already exists"}
+用例测试结果:  event_add_008----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.9' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_09: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.9')" >
+            通过</a>
+
+        <div id='div_pt1.9' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.9').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.9: ******* 正在执行用例 -&gt;event_add_009 *********
+请求方式: post，请求URL: http://127.0.0.1:8000/api/add_event/
+请求参数: 
+post请求body类型为：data ,body内容为：{"eid":12,"name":"一加手机发布会","limit":1000,"address":"深圳体育中心","start_time":"2018"}
+页面返回信息：{"status": 10024, "message": "start_time format error. It must be in YYYY-MM-DD HH:MM:SS format."}
+用例测试结果:  event_add_009----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.10' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_10: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.10')" >
+            通过</a>
+
+        <div id='div_pt1.10' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.10').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.10: ******* 正在执行用例 -&gt;event_add_010 *********
+请求方式: post，请求URL: http://127.0.0.1:8000/api/add_event/
+请求参数: 
+post请求body类型为：data ,body内容为：{"eid":25,"name":"手机发布会","limit":1000,"address":"深圳体育中心","start_time":"2019-1-10 12:00:00"}
+页面返回信息：{"status": 200, "message": "add event success"}
+用例测试结果:  event_add_010----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.11' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_11: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.11')" >
+            通过</a>
+
+        <div id='div_pt1.11' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.11').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.11: ******* 正在执行用例 -&gt;quest_query_011 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_guest_list/
+请求参数: {"eid":1}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 200, "message": "success", "data": [{"realname": "Tom", "phone": "13511886601", "email": "alen@mail.com", "sign": false}, {"realname": "Jason", "phone": "13511886602", "email": "sign@mail.com", "sign": true}]}
+用例测试结果:  quest_query_011----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.12' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_12: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.12')" >
+            通过</a>
+
+        <div id='div_pt1.12' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.12').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.12: ******* 正在执行用例 -&gt;quest_query_012 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_guest_list/
+请求参数: {"eid":1,"phone":""}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 200, "message": "success", "data": [{"realname": "Tom", "phone": "13511886601", "email": "alen@mail.com", "sign": false}, {"realname": "Jason", "phone": "13511886602", "email": "sign@mail.com", "sign": true}]}
+用例测试结果:  quest_query_012----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.13' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_13: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.13')" >
+            通过</a>
+
+        <div id='div_pt1.13' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.13').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.13: ******* 正在执行用例 -&gt;quest_query_013 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_guest_list/
+请求参数: {"eid":"","phone":""}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 10021, "message": "eid cannot be empty"}
+用例测试结果:  quest_query_013----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.14' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_14: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.14')" >
+            通过</a>
+
+        <div id='div_pt1.14' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.14').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.14: ******* 正在执行用例 -&gt;quest_query_014 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_guest_list/
+请求参数: {"eid":7}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 10022, "message": "query result is empty"}
+用例测试结果:  quest_query_014----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+    <tr id='pt1.15' class='hiddenRow'>
+        <td class='passCase'><div class='testcase'>test_api_15: dict() -> new empty dictionary</div></td>
+        <td colspan='5' align='center'>
+
+        <!--css div popup start-->
+        <a class="popup_link" onfocus='this.blur();' href="javascript:showTestDetail('div_pt1.15')" >
+            通过</a>
+
+        <div id='div_pt1.15' class="popup_window">
+            <div style='text-align: right; color:red;cursor:pointer'>
+            <a onfocus='this.blur();' onclick="document.getElementById('div_pt1.15').style.display = 'none' " >
+               [x]</a>
+            </div>
+            <pre>
+            
+pt1.15: ******* 正在执行用例 -&gt;quest_query_015 *********
+请求方式: get，请求URL: http://127.0.0.1:8000/api/get_guest_list/
+请求参数: {"eid":1,"phone":13355556666}
+post请求body类型为： ,body内容为：
+页面返回信息：{"status": 10022, "message": "query result is empty"}
+用例测试结果:  quest_query_015----&gt;PASS
+
+
+            </pre>
+        </div>
+        <!--css div popup end-->
+    </td>
+    <td></td>
+</tr>
+
+<tr id='total_row'>
+    <td>总计</td>
+    <td>15</td>
+    <td>15</td>
+    <td>0</td>
+    <td>0</td>
+	<td>通过率：100.00%</td>
+	<td>&nbsp;</td>
+</tr>
+</table>
+<script>
+    drawCircle(15, 0, 0)
+</script>
+
+<div id='ending'>&nbsp;</div>
+
+</body>
+</html>
